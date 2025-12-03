@@ -68,10 +68,6 @@ class UsuarioViewSet(viewsets.ModelViewSet):
         else:
             data["foto"] = None
 
-        print("DEBUG REQUEST.DATA:", request.data)
-        print("DEBUG REQUEST.FILES:", request.FILES)
-        print("DEBUG DATA FINAL QUE SE ENVIA AL SERVICE:", data)
-
         try:
             usuario = self.service.crear_usuario(data)
             serializer = UsuarioSerializer(usuario)
