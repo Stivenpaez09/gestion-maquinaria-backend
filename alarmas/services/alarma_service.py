@@ -106,8 +106,8 @@ class AlarmaService(IAlarmaService):
                 )
                 alarmas_creadas.append(alarma_critica)
 
-            # Condición 2: Alarma MEDIA (faltan <= 48 horas)
-            elif 0 < diferencia <= 48:
+            # Condición 2: Alarma MEDIA (faltan <= 20 horas)
+            elif 0 < diferencia <= 20:
                 alarma_media = self._crear_alarma(
                     id_maquina=id_maquina,
                     tipo='mantenimiento',

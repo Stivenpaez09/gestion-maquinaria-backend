@@ -373,7 +373,7 @@ class MaquinariaService(IMaquinariaService):
                     resumen["vencidos"] += 1
                 
                 # b) PENDIENTE (solo si NO vencido)
-                elif 0 < diferencia <= 48:
+                elif 0 < diferencia <= 20:
                     resumen["pendientes"] += 1
                 
                 # c) AL DÍA (solo si NO vencido y NO pendiente)

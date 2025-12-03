@@ -50,6 +50,16 @@ class IAlarmaService(ABC):
         pass
 
     @abstractmethod
+    def obtener_alarmas_criticas(self):
+        """Obtiene todas las alarmas de nivel crítico."""
+        pass
+
+    @abstractmethod
+    def obtener_alarmas_por_tipo(self, tipo: str):
+        """Obtiene alarmas filtradas por tipo."""
+        pass
+
+    @abstractmethod
     def obtener_estadisticas(self):
         """Retorna estadísticas del dashboard."""
         pass
