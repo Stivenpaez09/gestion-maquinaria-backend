@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from alarmas.serializers.alarma_serializer import AlarmaSerializer
 from alarmas.services.alarma_service import AlarmaService
 from alarmas.services.alarma_service_interface import IAlarmaService
+from logins.permissions.rol_permissions import RolPermission
 
 
 class AlarmaViewSet(viewsets.ModelViewSet):
@@ -14,6 +15,9 @@ class AlarmaViewSet(viewsets.ModelViewSet):
     Gestiona listado, consulta individual y marcado como vista,
     manteniendo toda la lógica en el servicio (principios SOLID).
     """
+
+    permission_key = "alarma"
+    permission_classes = [RolPermission]
 
     def __init__(
         self,

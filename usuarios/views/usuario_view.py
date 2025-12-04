@@ -2,6 +2,7 @@ from rest_framework import viewsets, status
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
+from logins.permissions.rol_permissions import RolPermission
 from usuarios.serializers.usuario_serializer import UsuarioSerializer
 from usuarios.services.usuario_service_interface import IUsuarioService
 from usuarios.services.usuario_service import UsuarioService
@@ -13,6 +14,9 @@ class UsuarioViewSet(viewsets.ModelViewSet):
     actualización y eliminación, manteniendo la lógica
     en el servicio (principios SOLID).
     """
+
+    permission_key = "usuario"
+    permission_classes = [RolPermission]
 
     def __init__(
         self,
@@ -56,7 +60,6 @@ class UsuarioViewSet(viewsets.ModelViewSet):
         Crea un nuevo usuario.
         Se maneja foto desde request.FILES.
         """
-
         data = request.data.copy()   # dict mutable
         # borrar completamente cualquier basura previa
         if "foto" in data:

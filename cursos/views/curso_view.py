@@ -6,6 +6,8 @@ from rest_framework.response import Response
 from cursos.serializers.curso_serializer import CursoSerializer
 from cursos.services.curso_service_interface import ICursoService
 from cursos.services.curso_service import CursoService
+from logins.permissions.rol_permissions import RolPermission
+
 
 class CursoViewSet(viewsets.ModelViewSet):
     """
@@ -14,6 +16,9 @@ class CursoViewSet(viewsets.ModelViewSet):
     actualización y eliminación, manteniendo la lógica
     en el servicio (principios SOLID).
     """
+
+    permission_key = "curso"
+    permission_classes = [RolPermission]
 
     def __init__(
         self,

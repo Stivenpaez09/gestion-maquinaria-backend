@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from hojas_vida.serializers.hoja_vida_serializer import HojaVidaSerializer
 from hojas_vida.services.hoja_vida_service import HojaVidaService
 from hojas_vida.services.hoja_vida_service_interface import IHojaVidaService
+from logins.permissions.rol_permissions import RolPermission
 
 
 class HojaVidaViewSet(viewsets.ModelViewSet):
@@ -14,6 +15,9 @@ class HojaVidaViewSet(viewsets.ModelViewSet):
     actualización y eliminación, manteniendo la lógica
     en el servicio (principios SOLID).
     """
+
+    permission_key = "hoja_vida"
+    permission_classes = [RolPermission]
 
     def __init__(
         self,

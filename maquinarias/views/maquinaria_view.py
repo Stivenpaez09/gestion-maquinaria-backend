@@ -2,6 +2,8 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
+
+from logins.permissions.rol_permissions import RolPermission
 from maquinarias.serializers.maquinaria_serializer import MaquinariaSerializer
 from maquinarias.services.maquinaria_service import MaquinariaService
 from maquinarias.services.maquinaria_service_interface import IMaquinariaService
@@ -13,6 +15,9 @@ class MaquinariaViewSet(viewsets.ModelViewSet):
     actualización y eliminación, manteniendo la lógica
     en el servicio (principios SOLID).
     """
+
+    permission_key = "maquinaria"
+    permission_classes = [RolPermission]
 
     def __init__(
         self,

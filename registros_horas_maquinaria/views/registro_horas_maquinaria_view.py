@@ -5,6 +5,7 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
+from logins.permissions.rol_permissions import RolPermission
 from registros_horas_maquinaria.serializers.registro_horas_maquinaria_serializer import \
     RegistroHorasMaquinariaSerializer
 from registros_horas_maquinaria.services.registro_horas_maquinaria_service import RegistroHorasMaquinariaService
@@ -24,6 +25,9 @@ class RegistroHorasMaquinariaViewSet(viewsets.ModelViewSet):
     - Eliminación
     Todo delegando la lógica de negocio al servicio correspondiente.
     """
+
+    permission_key = "registro_horas_maquinaria"
+    permission_classes = [RolPermission]
 
     def __init__(
         self,

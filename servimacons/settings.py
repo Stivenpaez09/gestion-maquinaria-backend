@@ -9,7 +9,6 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
-from django.conf.global_settings import SECRET_KEY
 from dotenv import load_dotenv
 import os
 from pathlib import Path
@@ -28,9 +27,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
-ALLOWED_HOSTS = ['*']
-
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 
 # Application definition
@@ -43,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework_simplejwt',
     'usuarios',
     'maquinarias',
     'conductores',
@@ -54,7 +52,8 @@ INSTALLED_APPS = [
     'hojas_vida',
     'proyecto_maquinaria',
     'registros_horas_maquinaria',
-    'alarmas'
+    'alarmas',
+    'logins',
 ]
 
 MIDDLEWARE = [
@@ -146,3 +145,29 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    )
+}
+
+AUTH_USER_MODEL = "logins.Login"
+
+from datetime import timedelta
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=6),       # Token de acceso
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=0),          # Token de renovación
+    'ROTATE_REFRESH_TOKENS': False,
+
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY': SECRET_KEY,
+
+    'USER_ID_FIELD': 'id_login',
+    'USER_ID_CLAIM': 'login_id',
+
+    'AUTH_HEADER_TYPES': ('Bearer',),
+}

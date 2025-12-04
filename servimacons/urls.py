@@ -34,6 +34,7 @@ urlpatterns = [
     path('api/proyecto-maquinaria/', include('proyecto_maquinaria.urls')),
     path('api/registros-horarios-maquinaria/', include('registros_horas_maquinaria.urls')),
     path('api/alarmas/', include('alarmas.urls')),
+    path('api/logins/', include('logins.urls')),
 ]
 
 if settings.DEBUG:

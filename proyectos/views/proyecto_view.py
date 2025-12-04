@@ -3,6 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
+from logins.permissions.rol_permissions import RolPermission
 from proyectos.serializers.proyecto_serializer import ProyectoSerializer
 from proyectos.services.proyecto_service_interface import IProyectoService
 from proyectos.services.proyecto_service import ProyectoService
@@ -14,6 +15,9 @@ class ProyectoViewSet(viewsets.ModelViewSet):
     actualización y eliminación, delegando la lógica
     al servicio correspondiente (principios SOLID).
     """
+
+    permission_key = "proyecto"
+    permission_classes = [RolPermission]
 
     def __init__(
         self,
@@ -104,7 +108,6 @@ class ProyectoViewSet(viewsets.ModelViewSet):
         Uso:
             GET /api/proyectos/por-empresa/1
         """
-
         proyectos = self.service.listar_proyectos_por_empresa(id_empresa)
         serializer = ProyectoSerializer(proyectos, many=True).data
 

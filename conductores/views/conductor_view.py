@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from conductores.serializers.conductor_serializer import ConductorSerializer
 from conductores.services.conductor_service import ConductorService
 from conductores.services.conductor_service_interface import IConductorService
+from logins.permissions.rol_permissions import RolPermission
 
 
 class ConductorViewSet(viewsets.ModelViewSet):
@@ -13,6 +14,9 @@ class ConductorViewSet(viewsets.ModelViewSet):
     actualización y eliminación, manteniendo la lógica
     en el servicio (principios SOLID).
     """
+
+    permission_key = "conductor"
+    permission_classes = [RolPermission]
 
     def __init__(
         self,

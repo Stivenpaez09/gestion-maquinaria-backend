@@ -3,6 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
+from logins.permissions.rol_permissions import RolPermission
 from mantenimientos.serializers.mantenimiento_serializer import MantenimientoSerializer
 from mantenimientos.services.mantenimiento_service import MantenimientoService
 from mantenimientos.services.mantenimiento_service_interface import IMantenimientoService
@@ -15,6 +16,9 @@ class MantenimientoViewSet(viewsets.ModelViewSet):
     actualización y eliminación, manteniendo la lógica
     en el servicio (principios SOLID).
     """
+
+    permission_key = "mantenimiento"
+    permission_classes = [RolPermission]
 
     def __init__(
         self,
