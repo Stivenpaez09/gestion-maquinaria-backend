@@ -2,6 +2,7 @@ from django.db import models
 
 from maquinarias.models.maquinaria import Maquinaria
 from proyectos.models.proyecto import Proyecto
+from usuarios.models.usuario import Usuario
 
 
 class RegistroHorasMaquinaria(models.Model):
@@ -11,7 +12,7 @@ class RegistroHorasMaquinaria(models.Model):
         Maquinaria,
         on_delete=models.CASCADE,
         db_column='id_maquina',
-        related_name='registros_horas'
+        related_name='registros_maquina'
     )
 
     proyecto = models.ForeignKey(
@@ -20,7 +21,16 @@ class RegistroHorasMaquinaria(models.Model):
         null=True,
         blank=True,
         db_column='id_proyecto',
-        related_name='registros_horas'
+        related_name='registros_proyecto'
+    )
+
+    usuario = models.ForeignKey(
+        Usuario,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        db_column='id_usuario',
+        related_name='registros_usuario'
     )
 
     fecha = models.DateField(
@@ -38,6 +48,10 @@ class RegistroHorasMaquinaria(models.Model):
         blank=True,
         help_text="Observaciones adicionales sobre el registro."
     )
+
+    foto_planilla = models.URLField(blank=True, null=True)
+    foto_horometro_inicial = models.URLField(blank=True, null=True)
+    foto_horometro_final = models.URLField(blank=True, null=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

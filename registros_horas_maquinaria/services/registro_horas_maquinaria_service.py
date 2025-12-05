@@ -1,3 +1,8 @@
+import os
+import uuid
+from typing import Optional
+
+from django.core.files.uploadedfile import UploadedFile
 from django.db import transaction
 from rest_framework.exceptions import NotFound
 
@@ -11,6 +16,7 @@ from registros_horas_maquinaria.serializers.registro_horas_maquinaria_serializer
     RegistroHorasMaquinariaSerializer
 from registros_horas_maquinaria.services.registro_horas_maquinaria_service_interface import \
     IRegistroHorasMaquinariaService
+from servimacons import settings
 
 
 class RegistroHorasMaquinariaService(IRegistroHorasMaquinariaService):
@@ -28,6 +34,41 @@ class RegistroHorasMaquinariaService(IRegistroHorasMaquinariaService):
         self.maquinaria_service = MaquinariaService()
         self.proyecto_maquinaria_service = ProyectoMaquinariaService()
         self.alarma_service = AlarmaService()
+
+    # ----------------------------------------------------------------------
+    # UTILIDAD: Guardar foto físicamente
+    # ----------------------------------------------------------------------
+    def _guardar_foto(self, foto_file: Optional[UploadedFile]) -> Optional[str]:
+        """
+        Guarda la foto en maquinarias/photos/
+        Retorna la URL absoluta final que se almacenará en BD.
+        """
+        if not foto_file:
+            return None
+
+        # Carpeta dentro de media/
+        carpeta_relativa = "maquinarias/photos"
+        carpeta_absoluta = os.path.join(settings.MEDIA_ROOT, carpeta_relativa)
+
+        # Crear carpeta si no existe
+        os.makedirs(carpeta_absoluta, exist_ok=True)
+
+        # Nombre único
+        extension = foto_file.name.split('.')[-1]
+        filename = f"{uuid.uuid4()}.{extension}"
+
+        # Ruta física en disco
+        ruta_fisica = os.path.join(carpeta_absoluta, filename)
+
+        # Guardar archivo físicamente
+        with open(ruta_fisica, "wb+") as destino:
+            for chunk in foto_file.chunks():
+                destino.write(chunk)
+
+        # URL interna MEDIA_URL
+        url_final = f"{settings.MEDIA_URL}{carpeta_relativa}/{filename}"
+
+        return url_final
 
     # ----------------------------------------------------------------------
     # Listar
@@ -66,9 +107,39 @@ class RegistroHorasMaquinariaService(IRegistroHorasMaquinariaService):
             - A ProyectoMaquinaria.horas_acumuladas (si viene proyecto)
         3. Persiste el registro
         """
+        data = data.copy()
+        foto_planilla = data.pop("foto_planilla", None)
+        foto_horometro_inicial = data.pop("foto_horometro_inicial", None)
+        foto_horometro_final = data.pop("foto_horometro_final", None)
+
+        fotos = {
+            "foto_planilla": foto_planilla,
+            "foto_horometro_inicial": foto_horometro_inicial,
+            "foto_horometro_final": foto_horometro_final
+        }
+
+        for key, value in fotos.items():
+            if isinstance(value, list):
+                fotos[key] = value[0] if value else None
+
+        foto_planilla = fotos["foto_planilla"]
+        foto_horometro_inicial = fotos["foto_horometro_inicial"]
+        foto_horometro_final = fotos["foto_horometro_final"]
 
         serializer = RegistroHorasMaquinariaSerializer(data=data)
         serializer.is_valid(raise_exception=True)
+
+        if foto_planilla:
+            ruta_foto = self._guardar_foto(foto_planilla)
+            serializer.validated_data["foto_planilla"] = ruta_foto
+
+        if foto_horometro_inicial:
+            ruta_foto = self._guardar_foto(foto_horometro_inicial)
+            serializer.validated_data["foto_horometro_inicial"] = ruta_foto
+
+        if foto_horometro_final:
+            ruta_foto = self._guardar_foto(foto_horometro_final)
+            serializer.validated_data["foto_horometro_final"] = ruta_foto
 
         maquina = serializer.validated_data["maquina"]
         horas = serializer.validated_data["horas_trabajadas"]
@@ -90,7 +161,6 @@ class RegistroHorasMaquinariaService(IRegistroHorasMaquinariaService):
 
         # --- Validar y generar alarma
         self.alarma_service.validar_y_generar_alarmas(maquina.id_maquina)
-        print("Ya se envio el id a la alarma")
         # Guardar registro
         registro = RegistroHorasMaquinariaRepository.create(
             **serializer.validated_data
@@ -110,6 +180,19 @@ class RegistroHorasMaquinariaService(IRegistroHorasMaquinariaService):
         - Es una edición del registro, no recalcula acumulados
         """
         registro = self.obtener_registro(id_registro)
+        data = data.copy()
+        foto_planilla = data.pop("foto_planilla", None)
+        foto_horometro_inicial = data.pop("foto_horometro_inicial", None)
+        foto_horometro_final = data.pop("foto_horometro_final", None)
+
+        if isinstance(foto_planilla, list):
+            foto_planilla = foto_planilla[0] if foto_planilla else None
+
+        if isinstance(foto_horometro_inicial, list):
+            foto_horometro_inicial = foto_horometro_inicial[0] if foto_horometro_inicial else None
+
+        if isinstance(foto_horometro_final, list):
+            foto_horometro_final = foto_horometro_final[0] if foto_horometro_final else None
 
         serializer = RegistroHorasMaquinariaSerializer(
             instance=registro,
@@ -117,6 +200,18 @@ class RegistroHorasMaquinariaService(IRegistroHorasMaquinariaService):
             partial=True
         )
         serializer.is_valid(raise_exception=True)
+
+        if foto_planilla:
+            ruta_foto = self._guardar_foto(foto_planilla)
+            serializer.validated_data["foto_planilla"] = ruta_foto
+
+        if foto_horometro_inicial:
+            ruta_foto = self._guardar_foto(foto_horometro_inicial)
+            serializer.validated_data["foto_horometro_inicial"] = ruta_foto
+
+        if foto_horometro_final:
+            ruta_foto = self._guardar_foto(foto_horometro_final)
+            serializer.validated_data["foto_horometro_final"] = ruta_foto
 
         actualizado = RegistroHorasMaquinariaRepository.update(
             id_registro=id_registro,

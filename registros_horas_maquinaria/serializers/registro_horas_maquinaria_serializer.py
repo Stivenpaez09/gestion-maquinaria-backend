@@ -14,9 +14,13 @@ class RegistroHorasMaquinariaSerializer(serializers.ModelSerializer):
             "id_registro",
             "maquina",
             "proyecto",
+            "usuario",
             "fecha",
             "horas_trabajadas",
             "observaciones",
+            "foto_planilla",
+            "foto_horometro_inicial",
+            "foto_horometro_final",
             "created_at",
             "updated_at"
         ]

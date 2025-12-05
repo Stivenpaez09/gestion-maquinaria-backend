@@ -125,3 +125,84 @@ class MaquinariaViewSet(viewsets.ModelViewSet):
                 {"detail": f"Error al generar resumen: {str(e)}"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+    # -------------------------------------------------------
+    #     MAQUINARIAS EN OPERACION (GET /maquinarias/en-operacion)
+    # ------------------------------------------------------
+    @action(detail=False, methods=['get'], url_path='en-operacion')
+    def maquinarias_en_operacion(self, request):
+        """
+        Retorna las maquinarias actualmente en operación.
+        GET /api/maquinarias/en-operacion/
+        """
+        try:
+            maquinarias = self.service.obtener_maquinarias_operacion()
+            serializer = MaquinariaSerializer(maquinarias, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response(
+                {"detail": f"Error al obtener maquinarias en operación: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    # -------------------------------------------------------
+    #     MAQUINARIAS EN OPERACION (GET /maquinarias/vencidas)
+    # ------------------------------------------------------
+    @action(detail=False, methods=['get'], url_path='vencidas')
+    def maquinarias_vencidas(self, request):
+        """
+        Retorna maquinarias con mantenimiento vencido.
+        GET /api/maquinarias/vencidas/
+        """
+        try:
+            maquinarias = self.service.obtener_maquinarias_vencidas()
+            serializer = MaquinariaSerializer(maquinarias, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response(
+                {"detail": f"Error al obtener maquinarias vencidas: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    # -------------------------------------------------------
+    #     MAQUINARIAS EN OPERACION (GET /maquinarias/pendientes)
+    # ------------------------------------------------------
+    @action(detail=False, methods=['get'], url_path='pendientes')
+    def maquinarias_pendientes(self, request):
+        """
+        Retorna maquinarias que están próximas a vencer (entre 1 y 20 horas).
+        GET /api/maquinarias/pendientes/
+        """
+        try:
+            maquinarias = self.service.obtener_maquinarias_pendientes()
+            serializer = MaquinariaSerializer(maquinarias, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response(
+                {"detail": f"Error al obtener maquinarias pendientes: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    # -------------------------------------------------------
+    #     MAQUINARIAS EN OPERACION (GET /maquinarias/al-dia)
+    # ------------------------------------------------------
+    @action(detail=False, methods=['get'], url_path='al-dia')
+    def maquinarias_al_dia(self, request):
+        """
+        Retorna maquinarias con mantenimiento al día.
+        GET /api/maquinarias/al-dia/
+        """
+        try:
+            maquinarias = self.service.obtener_maquinarias_al_dia()
+            serializer = MaquinariaSerializer(maquinarias, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response(
+                {"detail": f"Error al obtener maquinarias al día: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+

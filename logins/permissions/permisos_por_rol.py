@@ -30,6 +30,10 @@ ROLE_PERMISSIONS = {
         "maquinaria:partial_update",
         "maquinaria:destroy",
         "maquinaria:resumen_maquinarias",
+        "maquinarias:maquinarias_en_operacion",
+        "maquinarias:maquinarias_vencidas",
+        "maquinarias:maquinarias_pendientes",
+        "maquinarias:maquinarias_al_dia",
 
         # -------------------------------------------------------
         #                 CONDUCTOR
@@ -150,6 +154,11 @@ ROLE_PERMISSIONS = {
         "maquinaria:partial_update",
         "maquinaria:destroy",
         "maquinaria:resumen_maquinarias",
+        "maquinarias:maquinarias_en_operacion",
+        "maquinarias:maquinarias_vencidas",
+        "maquinarias:maquinarias_pendientes",
+        "maquinarias:maquinarias_al_dia",
+
 
         # -------------------------------------------------------
         #                 CONDUCTOR
@@ -253,6 +262,11 @@ ROLE_PERMISSIONS = {
         # -------------------------------------------------------
         "maquinaria:list",
         "maquinaria:retrieve",
+        "maquinaria:resumen_maquinarias",
+        "maquinarias:maquinarias_en_operacion",
+        "maquinarias:maquinarias_vencidas",
+        "maquinarias:maquinarias_pendientes",
+        "maquinarias:maquinarias_al_dia",
 
         # -------------------------------------------------------
         #                 MANTENIMIENTO PROGRAMADO
@@ -277,6 +291,11 @@ ROLE_PERMISSIONS = {
         # -------------------------------------------------------
         "maquinaria:list",
         "maquinaria:retrieve",
+        "maquinaria:resumen_maquinarias",
+        "maquinarias:maquinarias_en_operacion",
+        "maquinarias:maquinarias_vencidas",
+        "maquinarias:maquinarias_pendientes",
+        "maquinarias:maquinarias_al_dia",
 
         # -------------------------------------------------------
         #                 REGISTRO HORAS MAQUINARIA
@@ -312,6 +331,11 @@ ROLE_PERMISSIONS = {
         # -------------------------------------------------------
         "maquinaria:list",
         "maquinaria:retrieve",
+        "maquinaria:resumen_maquinarias",
+        "maquinarias:maquinarias_en_operacion",
+        "maquinarias:maquinarias_vencidas",
+        "maquinarias:maquinarias_pendientes",
+        "maquinarias:maquinarias_al_dia",
 
         # -------------------------------------------------------
         #                 MANTENIMIENTO PROGRAMADO

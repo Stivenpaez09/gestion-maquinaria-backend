@@ -74,6 +74,7 @@ class MaquinariaService(IMaquinariaService):
         - Guarda mediante el repository
         - Retorna datos serializados
         """
+        data = data.copy()
         foto_file = data.pop("foto", None)
         # ----- Normalización universal (soporta archivo único o array) -----
         if isinstance(foto_file, list):
@@ -377,7 +378,186 @@ class MaquinariaService(IMaquinariaService):
                     resumen["pendientes"] += 1
                 
                 # c) AL DÍA (solo si NO vencido y NO pendiente)
-                elif diferencia > 48:
+                elif diferencia > 20:
                     resumen["al_dia"] += 1
 
         return resumen
+
+    # =========================================================================
+    # LISTA DE MAQUINARIAS EN OPERACION
+    # =========================================================================
+    def obtener_maquinarias_operacion(self):
+        """
+        Retorna las maquinarias actualmente en operación.
+        Una maquinaria está en operación si su último proyecto no está finalizado.
+        """
+        maquinarias_operacion = []
+        maquinas = self.listar_maquinarias()
+
+        for maquina in maquinas:
+            id_maquina = maquina.id_maquina
+
+            ultimo_proyecto = self.proyecto_maquinaria_service.obtener_ultimo_proyecto_por_maquina(
+                id_maquina=id_maquina
+            )
+
+            if ultimo_proyecto and not ultimo_proyecto.finalizado:
+                maquinarias_operacion.append(maquina)
+
+        return maquinarias_operacion
+
+    # =========================================================================
+    # LISTA DE MAQUINARIAS VENCIDAS
+    # =========================================================================
+    def obtener_maquinarias_vencidas(self):
+        """
+        Retorna maquinarias con mantenimiento vencido.
+        Se considera vencida si las horas próximas del mantenimiento
+        (realizadas + intervalo) son menores o iguales a las horas totales.
+        """
+        maquinarias_vencidas = []
+        maquinas = self.listar_maquinarias()
+
+        for maquina in maquinas:
+            id_maquina = maquina.id_maquina
+            horas_totales = Decimal(str(maquina.horas_totales))
+
+            for tipo_mantenimiento in ['preventivo', 'predictivo']:
+
+                # Obtener último mantenimiento del tipo
+                ultimo_mantenimiento = self.mantenimiento_service.obtener_ultimo_mantenimiento_por_maquina_y_tipo(
+                    id_maquina=id_maquina,
+                    tipo=tipo_mantenimiento
+                )
+
+                # Si no existe mantenimiento del tipo → ignorar
+                if not ultimo_mantenimiento:
+                    continue
+
+                # Obtener mantenimiento programado del tipo
+                programado = self.mantenimiento_programado_service.obtener_mantenimiento_programado_por_maquina_y_tipo(
+                    id_maquina=id_maquina,
+                    tipo=tipo_mantenimiento
+                )
+
+                # Si no existe programado del tipo → ignorar
+                if not programado:
+                    continue
+
+                # ======================================================
+                # CALCULAR HORAS
+                # ======================================================
+                horas_realizadas = Decimal(str(ultimo_mantenimiento.horas_realizadas))
+                intervalo_horas = Decimal(str(programado.intervalo_horas))
+
+                horas_proximas = horas_realizadas + intervalo_horas
+                diferencia = horas_totales - horas_proximas
+
+
+                if horas_proximas >= horas_totales:
+                    maquinarias_vencidas.append(maquina)
+
+        return maquinarias_vencidas
+
+    # =========================================================================
+    # LISTA DE MAQUINARIAS PENDIENTES
+    # =========================================================================
+    def obtener_maquinarias_pendientes(self):
+        """
+        Retorna maquinarias con mantenimiento próximo a vencer.
+        Pendiente significa que faltan entre 1 y 20 horas para el mantenimiento.
+        """
+        maquinarias_pendientes = []
+        maquinas = self.listar_maquinarias()
+
+        for maquina in maquinas:
+            id_maquina = maquina.id_maquina
+            horas_totales = Decimal(str(maquina.horas_totales))
+
+            for tipo_mantenimiento in ['preventivo', 'predictivo']:
+
+                # Obtener último mantenimiento del tipo
+                ultimo_mantenimiento = self.mantenimiento_service.obtener_ultimo_mantenimiento_por_maquina_y_tipo(
+                    id_maquina=id_maquina,
+                    tipo=tipo_mantenimiento
+                )
+
+                # Si no existe mantenimiento del tipo → ignorar
+                if not ultimo_mantenimiento:
+                    continue
+
+                # Obtener mantenimiento programado del tipo
+                programado = self.mantenimiento_programado_service.obtener_mantenimiento_programado_por_maquina_y_tipo(
+                    id_maquina=id_maquina,
+                    tipo=tipo_mantenimiento
+                )
+
+                # Si no existe programado del tipo → ignorar
+                if not programado:
+                    continue
+
+                # ======================================================
+                # CALCULAR HORAS
+                # ======================================================
+                horas_realizadas = Decimal(str(ultimo_mantenimiento.horas_realizadas))
+                intervalo_horas = Decimal(str(programado.intervalo_horas))
+
+                horas_proximas = horas_realizadas + intervalo_horas
+                diferencia = horas_totales - horas_proximas
+
+                if 0 < diferencia <= 20:
+                    maquinarias_pendientes.append(maquina)
+
+        return maquinarias_pendientes
+
+
+    # =========================================================================
+    # LISTA DE MAQUINARIAS AL DIA
+    # =========================================================================
+    def obtener_maquinarias_al_dia(self):
+        """
+       Retorna maquinarias con mantenimiento al día.
+       Una maquinaria está al día si faltan más de 20 horas para su mantenimiento.
+       """
+        maquinarias_al_dia = []
+        maquinas = self.listar_maquinarias()
+
+        for maquina in maquinas:
+            id_maquina = maquina.id_maquina
+            horas_totales = Decimal(str(maquina.horas_totales))
+
+            for tipo_mantenimiento in ['preventivo', 'predictivo']:
+
+                # Obtener último mantenimiento del tipo
+                ultimo_mantenimiento = self.mantenimiento_service.obtener_ultimo_mantenimiento_por_maquina_y_tipo(
+                    id_maquina=id_maquina,
+                    tipo=tipo_mantenimiento
+                )
+
+                # Si no existe mantenimiento del tipo → ignorar
+                if not ultimo_mantenimiento:
+                    continue
+
+                # Obtener mantenimiento programado del tipo
+                programado = self.mantenimiento_programado_service.obtener_mantenimiento_programado_por_maquina_y_tipo(
+                    id_maquina=id_maquina,
+                    tipo=tipo_mantenimiento
+                )
+
+                # Si no existe programado del tipo → ignorar
+                if not programado:
+                    continue
+
+                # ======================================================
+                # CALCULAR HORAS
+                # ======================================================
+                horas_realizadas = Decimal(str(ultimo_mantenimiento.horas_realizadas))
+                intervalo_horas = Decimal(str(programado.intervalo_horas))
+
+                horas_proximas = horas_realizadas + intervalo_horas
+                diferencia = horas_totales - horas_proximas
+
+                if diferencia > 20:
+                    maquinarias_al_dia.append(maquina)
+
+        return maquinarias_al_dia

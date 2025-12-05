@@ -41,3 +41,19 @@ class IMaquinariaService(ABC):
     @abstractmethod
     def obtener_resumen_maquinarias(self):
         pass
+
+    @abstractmethod
+    def obtener_maquinarias_operacion(self):
+        pass
+
+    @abstractmethod
+    def obtener_maquinarias_vencidas(self):
+        pass
+
+    @abstractmethod
+    def obtener_maquinarias_pendientes(self):
+        pass
+
+    @abstractmethod
+    def obtener_maquinarias_al_dia(self):
+        pass
