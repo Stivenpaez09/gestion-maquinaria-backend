@@ -216,3 +216,16 @@ class MantenimientoService(IMantenimientoService):
         """
         return MantenimientoRepository.get_ultimo_por_maquina_y_tipo(id_maquina, tipo)
 
+    # ----------------------------------------------------------------------
+    # OBTENER ÚLTIMO MANTENIMIENTO POR MÁQUINA Y PROGRAMADO
+    # -----------------------------------------------------------------
+    def obtener_ultimo_mantenimiento_por_maquina_y_programado(self, id_maquina: int, id_programado: int):
+        """
+        Obtiene el último mantenimiento realizado a una máquina según un
+        mantenimiento programado específico.
+        """
+        return MantenimientoRepository.get_ultimo_por_maquina_y_programado(
+            id_maquina,
+            id_programado
+        )
+

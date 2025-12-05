@@ -411,9 +411,8 @@ class MaquinariaService(IMaquinariaService):
     # =========================================================================
     def obtener_maquinarias_vencidas(self):
         """
-        Retorna maquinarias con mantenimiento vencido.
-        Se considera vencida si las horas próximas del mantenimiento
-        (realizadas + intervalo) son menores o iguales a las horas totales.
+        Retorna maquinarias con al menos un mantenimiento programado vencido.
+        VENCIDO = horas_proximas <= horas_totales
         """
         maquinarias_vencidas = []
         maquinas = self.listar_maquinarias()
@@ -422,40 +421,26 @@ class MaquinariaService(IMaquinariaService):
             id_maquina = maquina.id_maquina
             horas_totales = Decimal(str(maquina.horas_totales))
 
-            for tipo_mantenimiento in ['preventivo', 'predictivo']:
+            programados = self.mantenimiento_programado_service.obtener_programados_por_maquina(id_maquina)
 
-                # Obtener último mantenimiento del tipo
-                ultimo_mantenimiento = self.mantenimiento_service.obtener_ultimo_mantenimiento_por_maquina_y_tipo(
+            for programado in programados:
+
+                # Obtener último mantenimiento real asociado a este programado
+                ultimo = self.mantenimiento_service.obtener_ultimo_mantenimiento_por_maquina_y_programado(
                     id_maquina=id_maquina,
-                    tipo=tipo_mantenimiento
+                    id_programado=programado.id_programado
                 )
 
-                # Si no existe mantenimiento del tipo → ignorar
-                if not ultimo_mantenimiento:
-                    continue
+                if not ultimo:
+                    continue  # Nunca se ha realizado → ignorar
 
-                # Obtener mantenimiento programado del tipo
-                programado = self.mantenimiento_programado_service.obtener_mantenimiento_programado_por_maquina_y_tipo(
-                    id_maquina=id_maquina,
-                    tipo=tipo_mantenimiento
-                )
+                horas_realizadas = Decimal(str(ultimo.horas_realizadas))
+                intervalo = Decimal(str(programado.intervalo_horas))
+                horas_proximas = horas_realizadas + intervalo
 
-                # Si no existe programado del tipo → ignorar
-                if not programado:
-                    continue
-
-                # ======================================================
-                # CALCULAR HORAS
-                # ======================================================
-                horas_realizadas = Decimal(str(ultimo_mantenimiento.horas_realizadas))
-                intervalo_horas = Decimal(str(programado.intervalo_horas))
-
-                horas_proximas = horas_realizadas + intervalo_horas
-                diferencia = horas_totales - horas_proximas
-
-
-                if horas_proximas >= horas_totales:
+                if horas_proximas <= horas_totales:
                     maquinarias_vencidas.append(maquina)
+                    break
 
         return maquinarias_vencidas
 
@@ -464,8 +449,8 @@ class MaquinariaService(IMaquinariaService):
     # =========================================================================
     def obtener_maquinarias_pendientes(self):
         """
-        Retorna maquinarias con mantenimiento próximo a vencer.
-        Pendiente significa que faltan entre 1 y 20 horas para el mantenimiento.
+        Retorna maquinarias con al menos un mantenimiento programado próximo.
+        PENDIENTE = 0 < (horas_proximas - horas_totales) <= 20
         """
         maquinarias_pendientes = []
         maquinas = self.listar_maquinarias()
@@ -474,39 +459,28 @@ class MaquinariaService(IMaquinariaService):
             id_maquina = maquina.id_maquina
             horas_totales = Decimal(str(maquina.horas_totales))
 
-            for tipo_mantenimiento in ['preventivo', 'predictivo']:
+            programados = self.mantenimiento_programado_service.obtener_programados_por_maquina(id_maquina)
 
-                # Obtener último mantenimiento del tipo
-                ultimo_mantenimiento = self.mantenimiento_service.obtener_ultimo_mantenimiento_por_maquina_y_tipo(
+            for programado in programados:
+
+                ultimo = self.mantenimiento_service.obtener_ultimo_mantenimiento_por_maquina_y_programado(
                     id_maquina=id_maquina,
-                    tipo=tipo_mantenimiento
+                    id_programado=programado.id_programado
                 )
 
-                # Si no existe mantenimiento del tipo → ignorar
-                if not ultimo_mantenimiento:
+                if not ultimo:
                     continue
 
-                # Obtener mantenimiento programado del tipo
-                programado = self.mantenimiento_programado_service.obtener_mantenimiento_programado_por_maquina_y_tipo(
-                    id_maquina=id_maquina,
-                    tipo=tipo_mantenimiento
-                )
+                horas_realizadas = Decimal(str(ultimo.horas_realizadas))
+                intervalo = Decimal(str(programado.intervalo_horas))
+                horas_proximas = horas_realizadas + intervalo
 
-                # Si no existe programado del tipo → ignorar
-                if not programado:
-                    continue
+                diferencia = horas_proximas - horas_totales
 
-                # ======================================================
-                # CALCULAR HORAS
-                # ======================================================
-                horas_realizadas = Decimal(str(ultimo_mantenimiento.horas_realizadas))
-                intervalo_horas = Decimal(str(programado.intervalo_horas))
-
-                horas_proximas = horas_realizadas + intervalo_horas
-                diferencia = horas_totales - horas_proximas
-
+                # pendiente: faltan entre 1 y 20 horas
                 if 0 < diferencia <= 20:
                     maquinarias_pendientes.append(maquina)
+                    break
 
         return maquinarias_pendientes
 
@@ -516,9 +490,9 @@ class MaquinariaService(IMaquinariaService):
     # =========================================================================
     def obtener_maquinarias_al_dia(self):
         """
-       Retorna maquinarias con mantenimiento al día.
-       Una maquinaria está al día si faltan más de 20 horas para su mantenimiento.
-       """
+        Retorna maquinarias que están totalmente al día.
+        AL DÍA = ninguna vencida y ninguna pendiente.
+        """
         maquinarias_al_dia = []
         maquinas = self.listar_maquinarias()
 
@@ -526,38 +500,35 @@ class MaquinariaService(IMaquinariaService):
             id_maquina = maquina.id_maquina
             horas_totales = Decimal(str(maquina.horas_totales))
 
-            for tipo_mantenimiento in ['preventivo', 'predictivo']:
+            programados = self.mantenimiento_programado_service.obtener_programados_por_maquina(id_maquina)
 
-                # Obtener último mantenimiento del tipo
-                ultimo_mantenimiento = self.mantenimiento_service.obtener_ultimo_mantenimiento_por_maquina_y_tipo(
+            estado = "al_dia"
+
+            for programado in programados:
+
+                ultimo = self.mantenimiento_service.obtener_ultimo_mantenimiento_por_maquina_y_programado(
                     id_maquina=id_maquina,
-                    tipo=tipo_mantenimiento
+                    id_programado=programado.id_programado
                 )
 
-                # Si no existe mantenimiento del tipo → ignorar
-                if not ultimo_mantenimiento:
+                if not ultimo:
                     continue
 
-                # Obtener mantenimiento programado del tipo
-                programado = self.mantenimiento_programado_service.obtener_mantenimiento_programado_por_maquina_y_tipo(
-                    id_maquina=id_maquina,
-                    tipo=tipo_mantenimiento
-                )
+                horas_realizadas = Decimal(str(ultimo.horas_realizadas))
+                intervalo = Decimal(str(programado.intervalo_horas))
+                horas_proximas = horas_realizadas + intervalo
 
-                # Si no existe programado del tipo → ignorar
-                if not programado:
-                    continue
+                diferencia = horas_proximas - horas_totales
 
-                # ======================================================
-                # CALCULAR HORAS
-                # ======================================================
-                horas_realizadas = Decimal(str(ultimo_mantenimiento.horas_realizadas))
-                intervalo_horas = Decimal(str(programado.intervalo_horas))
+                if horas_proximas <= horas_totales:
+                    estado = "vencida"
+                    break
 
-                horas_proximas = horas_realizadas + intervalo_horas
-                diferencia = horas_totales - horas_proximas
+                if 0 < diferencia <= 20:
+                    estado = "pendiente"
+                    break
 
-                if diferencia > 20:
-                    maquinarias_al_dia.append(maquina)
+            if estado == "al_dia":
+                maquinarias_al_dia.append(maquina)
 
         return maquinarias_al_dia

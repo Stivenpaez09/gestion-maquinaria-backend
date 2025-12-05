@@ -165,3 +165,23 @@ class MantenimientoRepository:
             ).order_by('-fecha_mantenimiento').first()
         except ObjectDoesNotExist:
             return None
+
+    @staticmethod
+    def get_ultimo_por_maquina_y_programado(id_maquina: int, id_programado: int):
+        """
+        Obtiene el último mantenimiento realizado a una máquina según
+        un mantenimiento programado específico.
+
+        Parámetros:
+            id_maquina (int): ID de la máquina.
+            id_programado (int): ID del mantenimiento programado.
+
+        Retorna:
+            Mantenimiento | None: El registro más reciente o None si no existe.
+        """
+        return (
+            Mantenimiento.objects
+            .filter(maquina_id=id_maquina, programado_id=id_programado)
+            .order_by('-fecha_mantenimiento')
+            .first()
+        )

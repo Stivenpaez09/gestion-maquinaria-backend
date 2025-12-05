@@ -107,3 +107,19 @@ class MantenimientoProgramadoRepository:
 
         mantenimiento.delete()
         return True
+
+    @staticmethod
+    def exists_by_maquina_y_nombre(id_maquina: int, nombre: str, exclude_id: int = None):
+        """
+        Verifica si existe un mantenimiento con el mismo nombre para la misma máquina.
+        Permite excluir un ID específico (en caso de actualización).
+        """
+        qs = MantenimientoProgramado.objects.filter(
+            maquina_id=id_maquina,
+            nombre__iexact=nombre
+        )
+
+        if exclude_id:
+            qs = qs.exclude(id_programado=exclude_id)
+
+        return qs.exists()

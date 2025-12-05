@@ -19,6 +19,12 @@ class MantenimientoProgramado(models.Model):
         related_name='mantenimientos_programados'
     )
 
+    nombre = models.CharField(
+        max_length=100,
+        default='General',
+        help_text="Nombre del mantenimiento programado (único por máquina)"
+    )
+
     tipo = models.CharField(
         max_length=50,
         choices=[
@@ -48,6 +54,13 @@ class MantenimientoProgramado(models.Model):
         verbose_name = "Mantenimiento programado"
         verbose_name_plural = "Mantenimientos programados"
         ordering = ['id_programado']
+
+        constraints = [
+            models.UniqueConstraint(
+                fields=['maquina', 'nombre'],
+                name='unique_nombre_por_maquina'
+            )
+        ]
 
     def __str__(self):
         return f"{self.tipo} - cada {self.intervalo_horas}h"

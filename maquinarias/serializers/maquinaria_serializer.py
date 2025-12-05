@@ -149,9 +149,9 @@ class MaquinariaSerializer(serializers.ModelSerializer):
         - Una máquina no puede estar 'operativa' si horas_totales es 0.
         - La fecha de adquisición debe ser coherente.
         """
-        fecha = data.get("fecha_adquisicion")
-        horas = data.get("horas_totales")
-        estado = data.get("estado")
+        fecha = data.get("fecha_adquisicion") or getattr(self.instance, "fecha_adquisicion", None)
+        horas = data.get("horas_totales") or getattr(self.instance, "horas_totales", None)
+        estado = data.get("estado") or getattr(self.instance, "estado", None)
 
         if estado == "operativa" and horas == 0:
             raise serializers.ValidationError({

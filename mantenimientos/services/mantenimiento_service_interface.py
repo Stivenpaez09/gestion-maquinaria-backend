@@ -42,3 +42,11 @@ class IMantenimientoService(ABC):
     @abstractmethod
     def obtener_ultimo_mantenimiento_por_maquina_y_tipo(self, id_maquina: int, tipo: str):
         pass
+
+    @abstractmethod
+    def obtener_ultimo_mantenimiento_por_maquina_y_programado(self, id_maquina: int, id_programado: int):
+        """
+        Obtiene el último mantenimiento realizado a una máquina según un
+        mantenimiento programado específico.
+        """
+        pass

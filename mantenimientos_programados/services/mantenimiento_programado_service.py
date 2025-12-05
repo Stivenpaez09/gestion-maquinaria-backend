@@ -133,6 +133,15 @@ class MantenimientoProgramadoService(IMantenimientoProgramadoService):
         return True
 
     # ---------------------------------------------------------
+    # OBTENER POR MÁQUINA
+    # ---------------------------------------------------------
+    def obtener_programados_por_maquina(self, id_maquina: int):
+        """
+        Obtiene todos los mantenimientos programados asociados a una máquina.
+        """
+        return MantenimientoProgramadoRepository.get_by_maquina(id_maquina)
+
+    # ---------------------------------------------------------
     # OBTENER POR MÁQUINA Y TIPO
     # ---------------------------------------------------------
     def obtener_mantenimiento_programado_por_maquina_y_tipo(self, id_maquina: int, tipo: str):

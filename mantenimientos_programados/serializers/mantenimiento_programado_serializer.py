@@ -1,6 +1,8 @@
 from rest_framework import serializers
 
 from mantenimientos_programados.models.mantenimiento_programado import MantenimientoProgramado
+from mantenimientos_programados.repositories.mantenimiento_programado_repository import \
+    MantenimientoProgramadoRepository
 from maquinarias.models.maquinaria import Maquinaria
 
 
@@ -46,6 +48,16 @@ class MantenimientoProgramadoSerializer(serializers.ModelSerializer):
                     "null": "La máquina no puede ser nula."
                 }
             },
+            'nombre': {
+                'required': True,
+                'allow_blank': False,
+                'allow_null': False,
+                'error_messages': {
+                    "required": "El nombre del mantenimiento es obligatorio.",
+                    "blank": "El nombre no puede estar vacío.",
+                    "null": "El nombre no puede ser nulo."
+                }
+            },
             'intervalo_horas': {
                 'required': True
             },
@@ -54,6 +66,12 @@ class MantenimientoProgramadoSerializer(serializers.ModelSerializer):
                 'allow_blank': True
             }
         }
+
+    def validate_nombre(self, value):
+        """Validar que no sea solo espacios."""
+        if len(value.strip()) == 0:
+            raise serializers.ValidationError("El nombre no puede contener solo espacios.")
+        return value
 
     def validate_maquina(self, value):
         """Validar que la maquinaria exista y esté activa."""
@@ -92,27 +110,22 @@ class MantenimientoProgramadoSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         """
         Validaciones cruzadas:
-
-        - Evitar duplicados del mismo tipo para la misma maquinaria.
-        - Evitar intervalos demasiado pequeños o conflictivos.
+        - Evitar duplicado del nombre por máquina.
         """
 
-        maquina = attrs.get('maquina')
-        tipo = attrs.get('tipo')
-        intervalo_horas = attrs.get('intervalo_horas')
+        maquina = attrs.get("maquina") or getattr(self.instance, "maquina", None)
+        nombre = attrs.get("nombre") or getattr(self.instance, "nombre", None)
 
-        # 1. Validar que no exista otro mantenimiento del mismo tipo en la misma máquina
-        if self.instance is None:  # Solo en creación
-            if MantenimientoProgramado.objects.filter(maquina=maquina, tipo=tipo).exists():
-                raise serializers.ValidationError(
-                    f"La maquinaria ya tiene registrado un mantenimiento del tipo '{tipo}'."
-                )
-        else:  # En actualización
-            if MantenimientoProgramado.objects.filter(
-                    maquina=maquina, tipo=tipo
-            ).exclude(id_programado=self.instance.id_programado).exists():
-                raise serializers.ValidationError(
-                    f"Ya existe otro mantenimiento del tipo '{tipo}' para esta maquinaria."
-                )
+        # ID a excluir si es actualización
+        exclude_id = self.instance.id_programado if self.instance else None
+
+        if MantenimientoProgramadoRepository.exists_by_maquina_y_nombre(
+            id_maquina=maquina.id_maquina,
+            nombre=nombre,
+            exclude_id=exclude_id
+        ):
+            raise serializers.ValidationError(
+                f"Ya existe un mantenimiento con el nombre '{nombre}' para esta maquinaria."
+            )
 
         return attrs

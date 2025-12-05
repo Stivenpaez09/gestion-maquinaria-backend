@@ -43,6 +43,13 @@ class IMantenimientoProgramadoService(ABC):
         pass
 
     @abstractmethod
+    def obtener_programados_por_maquina(self, id_maquina: int):
+        """
+        Obtiene todos los mantenimientos programados asociados a una máquina.
+        """
+        pass
+
+    @abstractmethod
     def obtener_mantenimiento_programado_por_maquina_y_tipo(self, id_maquina: int, tipo: str):
         """
         Obtiene un mantenimiento programado por máquina y tipo.

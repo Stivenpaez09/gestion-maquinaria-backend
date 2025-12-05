@@ -33,27 +33,17 @@ class AlarmaService(IAlarmaService):
 
     def validar_y_generar_alarmas(self, id_maquina: int):
         """
-        Lógica principal del módulo alarmas:
-        
-        1. Obtiene el último mantenimiento PREVENTIVO y PREDICTIVO por separado
-        2. Para cada tipo:
-           - Busca el mantenimiento programado correspondiente
-           - Calcula: horas_realizadas + intervalo_horas
-           - Compara con horas_totales
-           - PERSISTE la alarma si cumple la condición (crítica o media)
-        3. Retorna resumen de alarmas creadas
-        
-        Args:
-            id_maquina: ID de la máquina a validar
-            
-        Raises:
-            NotFound: si la máquina no existe
-            
-        Returns:
-            dict: resumen con alarmas_creadas (lista de dicts con los datos)
+        Nueva lógica para generar alarmas:
+
+        - Una máquina puede tener múltiples mantenimientos programados del mismo tipo.
+        - Para cada mantenimiento programado:
+            * Se obtiene el último mantenimiento real vinculado (maquina + programado)
+            * Se calcula horas_proximas = horas_realizadas + intervalo_horas
+            * Se compara contra horas_totales de la máquina
+            * Se genera alarma CRÍTICA o MEDIA
         """
-        
-        # Paso 1: Obtener y validar la máquina
+
+        # 1. Obtener la máquina
         maquina = self.maquinaria_service.obtener_maquinaria(id_maquina=id_maquina)
         if not maquina:
             raise NotFound(f"Máquina con ID {id_maquina} no existe.")
@@ -61,69 +51,88 @@ class AlarmaService(IAlarmaService):
         horas_totales = Decimal(str(maquina.horas_totales))
         alarmas_creadas = []
 
-        # Paso 2: Procesar PREVENTIVO y PREDICTIVO por separado
-        for tipo in ['preventivo', 'predictivo']:
+        # 2. Obtener todos los mantenimientos programados de la máquina
+        programados = (
+            self.mantenimiento_programado_service
+            .obtener_programados_por_maquina(id_maquina=id_maquina)
+        )
 
-            # Obtener el último mantenimiento de este tipo
-            ultimo_mantenimiento = self.mantenimiento_service.obtener_ultimo_mantenimiento_por_maquina_y_tipo(
-                id_maquina=id_maquina,
-                tipo=tipo
+        if not programados:
+            return {
+                "id_maquina": id_maquina,
+                "alarmas_creadas": [],
+                "cantidad": 0,
+                "mensaje": "La máquina no tiene mantenimientos programados"
+            }
+
+        # 3. Procesar cada mantenimiento programado
+        for programado in programados:
+
+            # Obtener el último mantenimiento real de esta máquina asociado a este programado
+            ultimo_mantenimiento = (
+                self.mantenimiento_service
+                .obtener_ultimo_mantenimiento_por_maquina_y_programado(
+                    id_maquina=id_maquina,
+                    id_programado=programado.id_programado
+                )
             )
 
-
-
-            # Si no hay mantenimiento de este tipo, saltar
+            # Si nunca se ha hecho un mantenimiento para este programado → saltar
             if not ultimo_mantenimiento:
                 continue
 
-            # Obtener el mantenimiento programado de este tipo
-            programado = self.mantenimiento_programado_service.obtener_mantenimiento_programado_por_maquina_y_tipo(
-                id_maquina=id_maquina,
-                tipo=tipo
-            )
-
-            # Si no hay programado de este tipo, saltar
-            if not programado:
-                continue
-
-            # Calcular próximas horas
+            # 4. Cálculo de horas
             horas_realizadas = Decimal(str(ultimo_mantenimiento.horas_realizadas))
             intervalo_horas = Decimal(str(programado.intervalo_horas))
+
             horas_proximas = horas_realizadas + intervalo_horas
+            diferencia = horas_proximas - horas_totales
 
-            # Diferencia de horas restantes
-            diferencia =  horas_proximas-horas_totales
+            # 5. Crear alarmas
+            tipo = programado.tipo  # preventivo / predictivo / correctivo, etc.
 
-            # Condición 1: Alarma CRÍTICA (límite alcanzado o superado)
+            # CRÍTICA
             if diferencia <= 0:
-                self.maquinaria_service.actualizar_estado_maquinaria(id_maquina=id_maquina, estado="fuera de servicio")
-                alarma_critica = self._crear_alarma(
+                self.maquinaria_service.actualizar_estado_maquinaria(
                     id_maquina=id_maquina,
-                    tipo='mantenimiento',
-                    nivel='crítica',
-                    descripcion=f"Es hora de realizar el mantenimiento {tipo} en la máquina {id_maquina}. "
-                                f"Horas alcanzadas: {horas_totales}"
+                    estado="fuera de servicio"
                 )
-                alarmas_creadas.append(alarma_critica)
+                alarma = self._crear_alarma(
+                    id_maquina=id_maquina,
+                    tipo="mantenimiento",
+                    nivel="crítica",
+                    descripcion=(
+                        f"Es hora de realizar el mantenimiento {tipo} "
+                        f"(programado #{programado.id_programado}). "
+                        f"Horas alcanzadas: {horas_totales}"
+                    )
+                )
+                alarmas_creadas.append(alarma)
 
-            # Condición 2: Alarma MEDIA (faltan <= 20 horas)
+            # MEDIA (faltan 20 horas o menos)
             elif 0 < diferencia <= 20:
-                alarma_media = self._crear_alarma(
+                alarma = self._crear_alarma(
                     id_maquina=id_maquina,
-                    tipo='mantenimiento',
-                    nivel='media',
-                    descripcion=f"En {diferencia:.2f} horas se debe realizar el mantenimiento {tipo} "
-                                f"a la máquina con ID {id_maquina}."
+                    tipo="mantenimiento",
+                    nivel="media",
+                    descripcion=(
+                        f"En {diferencia:.2f} horas se debe realizar el mantenimiento {tipo} "
+                        f"(programado #{programado.id_programado}) "
+                        f"de la máquina {id_maquina}."
+                    )
                 )
-                alarmas_creadas.append(alarma_media)
+                alarmas_creadas.append(alarma)
 
-        # Paso 3: Retornar resumen
+        # 6. Respuesta
         return {
             "id_maquina": id_maquina,
             "alarmas_creadas": alarmas_creadas,
             "cantidad": len(alarmas_creadas),
-            "mensaje": f"Se crearon {len(alarmas_creadas)} alarma(s)" if alarmas_creadas 
-                      else "No se generaron alarmas"
+            "mensaje": (
+                f"Se crearon {len(alarmas_creadas)} alarma(s)"
+                if alarmas_creadas else
+                "No se generaron alarmas"
+            )
         }
 
     # =========================================================================
