@@ -20,7 +20,9 @@ def crear_usuario_predeterminado(sender, **kwargs):
         "nombre": "Usuario General",
         "cargo" : "Gerente",
         "email" : "admin@servimacons.com",
-        "telefono" : "3000000000"
+        "telefono" : "3000000000",
+        "fecha_ingreso" : "2025-12-05" ,
+        "foto" : None,
     }
 
     service = UsuarioService()
