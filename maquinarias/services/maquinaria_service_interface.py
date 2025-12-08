@@ -57,3 +57,8 @@ class IMaquinariaService(ABC):
     @abstractmethod
     def obtener_maquinarias_al_dia(self):
         pass
+
+    @abstractmethod
+    def listar_ultimas_maquinarias(self):
+        """Retorna las ultimas maquinarias creadas o actualizadas"""
+        pass

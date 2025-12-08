@@ -206,3 +206,18 @@ class MaquinariaViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
+    @action(detail=False, methods=['get'], url_path='ultimas-maquinarias')
+    def ultimas_maquinarias(self, request):
+        """
+        Retorna maquinarias con mantenimiento al día.
+        GET /api/maquinarias/al-dia/
+        """
+        try:
+            maquinarias = self.service.listar_ultimas_maquinarias()
+            serializer = MaquinariaSerializer(maquinarias, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(
+                {"detail": f"Error al obtener las ultimas maquinarias: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

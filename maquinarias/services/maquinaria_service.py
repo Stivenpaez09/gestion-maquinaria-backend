@@ -532,3 +532,7 @@ class MaquinariaService(IMaquinariaService):
                 maquinarias_al_dia.append(maquina)
 
         return maquinarias_al_dia
+
+    def listar_ultimas_maquinarias(self):
+        """Retorna las ultimas maquinarias creadas o actualizadas"""
+        return MaquinariaRepository.get_last_updated(limit=10)

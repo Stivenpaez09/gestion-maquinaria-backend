@@ -116,3 +116,11 @@ class MaquinariaRepository:
             return False
         maquinaria.delete()
         return True
+
+    @staticmethod
+    def get_last_updated(limit):
+        """
+        Retorna una lista con las últimas maquinarias actualizadas,
+        ordenadas por updated_at de más reciente a más antiguo.
+        """
+        return Maquinaria.objects.order_by('-updated_at')[:limit]
