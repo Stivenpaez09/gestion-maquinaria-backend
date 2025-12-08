@@ -34,6 +34,7 @@ ROLE_PERMISSIONS = {
         "maquinarias:maquinarias_vencidas",
         "maquinarias:maquinarias_pendientes",
         "maquinarias:maquinarias_al_dia",
+        "maquinaria:ultimas_maquinarias",
 
         # -------------------------------------------------------
         #                 CONDUCTOR
@@ -158,6 +159,7 @@ ROLE_PERMISSIONS = {
         "maquinarias:maquinarias_vencidas",
         "maquinarias:maquinarias_pendientes",
         "maquinarias:maquinarias_al_dia",
+        "maquinaria:ultimas_maquinarias",
 
 
         # -------------------------------------------------------
@@ -267,6 +269,7 @@ ROLE_PERMISSIONS = {
         "maquinarias:maquinarias_vencidas",
         "maquinarias:maquinarias_pendientes",
         "maquinarias:maquinarias_al_dia",
+        "maquinaria:ultimas_maquinarias",
 
         # -------------------------------------------------------
         #                 MANTENIMIENTO PROGRAMADO
@@ -296,6 +299,7 @@ ROLE_PERMISSIONS = {
         "maquinarias:maquinarias_vencidas",
         "maquinarias:maquinarias_pendientes",
         "maquinarias:maquinarias_al_dia",
+        "maquinaria:ultimas_maquinarias",
 
         # -------------------------------------------------------
         #                 REGISTRO HORAS MAQUINARIA
@@ -336,6 +340,7 @@ ROLE_PERMISSIONS = {
         "maquinarias:maquinarias_vencidas",
         "maquinarias:maquinarias_pendientes",
         "maquinarias:maquinarias_al_dia",
+        "maquinaria:ultimas_maquinarias",
 
         # -------------------------------------------------------
         #                 MANTENIMIENTO PROGRAMADO
