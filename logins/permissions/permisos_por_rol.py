@@ -130,7 +130,7 @@ ROLE_PERMISSIONS = {
         "alarma:list",
         "alarma:retrieve",
         "alarma:marcar_como_vista",
-        "alarma:cantidad_no_vista",
+        "alarma:cantidad_no_vistas",
 
     },
 
@@ -256,7 +256,7 @@ ROLE_PERMISSIONS = {
         "alarma:list",
         "alarma:retrieve",
         "alarma:marcar_como_vista",
-        "alarma:cantidad_no_vista",
+        "alarma:cantidad_no_vistas",
     },
     "RESPONSABLE_DE_MANTENIMIENTO": {
         # -------------------------------------------------------
@@ -287,6 +287,7 @@ ROLE_PERMISSIONS = {
         # -------------------------------------------------------
         "alarma:list",
         "alarma:retrieve",
+        "alarma:cantidad_no_vistas",
     },
     "OPERADOR": {
         # -------------------------------------------------------
@@ -328,6 +329,7 @@ ROLE_PERMISSIONS = {
         # -------------------------------------------------------
         "alarma:list",
         "alarma:retrieve",
+        "alarma:cantidad_no_vistas",
     },
     "TECNICO_DE_MANTENIMIENTO": {
         # -------------------------------------------------------
@@ -365,5 +367,6 @@ ROLE_PERMISSIONS = {
         # -------------------------------------------------------
         "alarma:list",
         "alarma:retrieve",
+        "alarma:cantidad_no_vistas",
     }
 }
