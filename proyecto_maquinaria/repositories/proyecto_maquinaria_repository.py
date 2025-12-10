@@ -142,7 +142,7 @@ class ProyectoMaquinariaRepository:
         try:
             return ProyectoMaquinaria.objects.filter(
                 maquina_id=id_maquina
-            ).order_by('-fecha_creacion').first()
+            ).order_by('-created_at').first()
         except ObjectDoesNotExist:
             return None
 
