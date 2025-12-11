@@ -343,6 +343,7 @@ class MaquinariaService(IMaquinariaService):
 
                 # Si no existe mantenimiento del tipo → ignorar
                 if not ultimo_mantenimiento:
+                    resumen["al_dia"] += 1
                     continue
 
                 # Obtener mantenimiento programado del tipo
