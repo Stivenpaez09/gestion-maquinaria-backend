@@ -21,7 +21,6 @@ class MantenimientoProgramado(models.Model):
 
     nombre = models.CharField(
         max_length=100,
-        default='General',
         help_text="Nombre del mantenimiento programado (único por máquina)"
     )
 
