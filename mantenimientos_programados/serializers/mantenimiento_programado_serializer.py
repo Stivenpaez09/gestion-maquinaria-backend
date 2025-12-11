@@ -29,6 +29,7 @@ class MantenimientoProgramadoSerializer(serializers.ModelSerializer):
         model = MantenimientoProgramado
         fields = [
             'id_programado',
+            'nombre',
             'maquina',
             'tipo',
             'intervalo_horas',
