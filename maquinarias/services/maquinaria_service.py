@@ -330,31 +330,25 @@ class MaquinariaService(IMaquinariaService):
             if ultimo_proyecto and not ultimo_proyecto.finalizado:
                 resumen["en_operacion"] += 1
 
-            # ======================================================
-            # 2. EVALUAR PREVENTIVO Y PREDICTIVO
-            # ======================================================
-            for tipo_mantenimiento in ['preventivo', 'predictivo']:
-                
-                # Obtener último mantenimiento del tipo
-                ultimo_mantenimiento = self.mantenimiento_service.obtener_ultimo_mantenimiento_por_maquina_y_tipo(
+            programados = self.mantenimiento_programado_service.obtener_programados_por_maquina(id_maquina)
+
+            if not programados:
+                resumen["al_dia"] += 1
+                continue
+
+            estado_maquina = "al_dia"
+
+            for programado in programados:
+
+                ultimo_mantenimiento = self.mantenimiento_service.obtener_ultimo_mantenimiento_por_maquina_y_programado(
                     id_maquina=id_maquina,
-                    tipo=tipo_mantenimiento
+                    id_programado=programado.id_programado
                 )
 
                 # Si no existe mantenimiento del tipo → ignorar
                 if not ultimo_mantenimiento:
-                    resumen["al_dia"] += 1
                     continue
 
-                # Obtener mantenimiento programado del tipo
-                programado = self.mantenimiento_programado_service.obtener_mantenimiento_programado_por_maquina_y_tipo(
-                    id_maquina=id_maquina,
-                    tipo=tipo_mantenimiento
-                )
-
-                # Si no existe programado del tipo → ignorar
-                if not programado:
-                    continue
 
                 # ======================================================
                 # CALCULAR HORAS
@@ -369,18 +363,19 @@ class MaquinariaService(IMaquinariaService):
                 # CLASIFICAR: VENCIDO → PENDIENTE → AL DÍA
                 # (Orden obligatorio para exclusividad)
                 # ======================================================
-
-                # a) VENCIDO
                 if horas_proximas >= horas_totales:
-                    resumen["vencidos"] += 1
-                
-                # b) PENDIENTE (solo si NO vencido)
+                    estado_maquina = "vencidos"
+                    break  # ya es el peor estado posible
+
                 elif 0 < diferencia <= 20:
-                    resumen["pendientes"] += 1
-                
-                # c) AL DÍA (solo si NO vencido y NO pendiente)
-                elif diferencia > 20:
-                    resumen["al_dia"] += 1
+                    if estado_maquina != "pendientes":  # no sobrescribir si ya estaba en "vencidos"
+                        estado_maquina = "pendientes"
+                    # NO hacemos break porque podría haber un vencido en los que faltan
+
+                    # ---------------------------------------
+                    # 4. Incrementar UNA SOLA categoría por máquina
+                    # ---------------------------------------
+            resumen[estado_maquina] += 1
 
         return resumen
 
