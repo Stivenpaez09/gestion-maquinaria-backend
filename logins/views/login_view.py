@@ -133,3 +133,26 @@ class LoginViewSet(viewsets.ModelViewSet):
         LoginResponseSerializer(response_data).data,
         status=status.HTTP_200_OK
         )
+
+    # -------------------------------------------------------
+    #         OBTENER LOGIN POR USUARIO (GET)
+    # -------------------------------------------------------
+    @action(
+        detail=False,
+        methods=["get"],
+        url_path="por-usuario/(?P<usuario_id>[^/.]+)"
+    )
+    def obtener_por_usuario(self, request, usuario_id=None):
+        """
+        Retorna el login asociado a un usuario específico.
+
+        ejemplo:
+            GET /api/login/por-usuario/5/
+        """
+        try:
+            login = self.service.obtener_login_por_usuario(usuario_id=int(usuario_id))
+            serializer = LoginDetailSerializer(login)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        except ValidationError as e:
+            return Response(e.detail, status=status.HTTP_400_BAD_REQUEST)

@@ -16,7 +16,6 @@ class Login(AbstractBaseUser, PermissionsMixin):
 
     ROLE_CHOICES = [
         ('ADMIN', 'Administrador'),
-        ('ASISTENTE', 'Asistente'),
         ('RESPONSABLE_DE_MANTENIMIENTO', 'Responsable de mantenimiento'),
         ('OPERADOR', 'Operador'),
         ('TECNICO_DE_MANTENIMIENTO', 'Tecnico de mantenimiento'),
