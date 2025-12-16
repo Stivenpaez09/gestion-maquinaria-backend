@@ -9,7 +9,7 @@ ROLE_PERMISSIONS = {
         "login:update",
         "login:partial_update",
         "login:destroy",
-        "login:obtener_por_usuario"
+        "login:obtener_por_usuario",
 
         # -------------------------------------------------------
         #                 USUARIO
