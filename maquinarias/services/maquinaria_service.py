@@ -357,13 +357,13 @@ class MaquinariaService(IMaquinariaService):
                 intervalo_horas = Decimal(str(programado.intervalo_horas))
                 
                 horas_proximas = horas_realizadas + intervalo_horas
-                diferencia = horas_totales - horas_proximas
+                diferencia = horas_proximas - horas_totales
 
                 # ======================================================
                 # CLASIFICAR: VENCIDO → PENDIENTE → AL DÍA
                 # (Orden obligatorio para exclusividad)
                 # ======================================================
-                if horas_proximas >= horas_totales:
+                if diferencia <= 0:
                     estado_maquina = "vencidos"
                     break  # ya es el peor estado posible
 
