@@ -103,7 +103,8 @@ class AlarmaService(IAlarmaService):
                     nivel="crítica",
                     descripcion=(
                         f"Es hora de realizar el mantenimiento {tipo} "
-                        f"(programado #{programado.id_programado}). "
+                        f"(programado #{programado.id_programado}) "
+                        f"de la máquina {id_maquina} - {maquina.nombre_maquina}."
                         f"Horas alcanzadas: {horas_totales}"
                     )
                 )
@@ -118,7 +119,7 @@ class AlarmaService(IAlarmaService):
                     descripcion=(
                         f"En {diferencia:.2f} horas se debe realizar el mantenimiento {tipo} "
                         f"(programado #{programado.id_programado}) "
-                        f"de la máquina {id_maquina}."
+                        f"de la máquina {id_maquina} - {maquina.nombre_maquina}."
                     )
                 )
                 alarmas_creadas.append(alarma)
