@@ -139,102 +139,91 @@ class MantenimientoSerializer(serializers.ModelSerializer):
             )
         return value
 
-
     def validate(self, attrs):
         instancia = self.instance
 
-        # Cargar valores nuevos o existentes (PATCH seguro)
-        tipo = attrs.get('tipo_mantenimiento', getattr(instancia, 'tipo_mantenimiento', None))
-        programado = attrs.get('programado', getattr(instancia, 'programado', None))
-        maquina = attrs.get('maquina', getattr(instancia, 'maquina', None))
-        horas = attrs.get('horas_realizadas', getattr(instancia, 'horas_realizadas', None))
-        fecha = attrs.get('fecha_mantenimiento', getattr(instancia, 'fecha_mantenimiento', None))
-        costo = attrs.get('costo', getattr(instancia, 'costo', None))
+        # Valores actuales SOLO si vienen en PATCH
+        tipo = attrs.get('tipo_mantenimiento')
+        programado = attrs.get('programado')
+        maquina = attrs.get('maquina')
+        horas = attrs.get('horas_realizadas')
+        fecha = attrs.get('fecha_mantenimiento')
+        costo = attrs.get('costo')
+
+        # Si es PATCH, completar SOLO para reglas que dependen de varios campos
+        if instancia:
+            tipo = tipo if 'tipo_mantenimiento' in attrs else instancia.tipo_mantenimiento
+            programado = programado if 'programado' in attrs else instancia.programado
+            maquina = maquina if 'maquina' in attrs else instancia.maquina
 
         # ================================
-        # 1. REGLA: tipos de mantenimiento
+        # 1. REGLAS DE TIPO / PROGRAMADO
         # ================================
-        # Solo se omite si el mantenimiento es correctivo
-        if tipo != "correctivo" and programado is None:
-            raise serializers.ValidationError(
-                "El mantenimiento solo puede omitir un mantenimiento programado si es de tipo correctivo."
-            )
 
-        # Correctivo → NO debe tener mantenimiento_programado
-        if tipo == "correctivo" and programado is not None:
-            raise serializers.ValidationError(
-                "Un mantenimiento correctivo no puede estar asociado a un mantenimiento programado."
-            )
-
-        # Predictivo → DEBE tener mantenimiento_programado
-        if tipo == "predictivo" and programado is None:
-            raise serializers.ValidationError(
-                "Un mantenimiento predictivo debe estar asociado a un mantenimiento programado."
-            )
-
-        # Preventivo → programado es opcional
-        if tipo == "preventivo" and programado:
-            # Validar que pertenezcan a la misma máquina
-            if programado.maquina.id_maquina != maquina.id_maquina:
+        if 'tipo_mantenimiento' in attrs or 'programado' in attrs:
+            if tipo != "correctivo" and programado is None:
                 raise serializers.ValidationError(
-                    "El mantenimiento programado no corresponde a la misma máquina."
+                    "El mantenimiento solo puede omitir un mantenimiento programado si es de tipo correctivo."
                 )
 
-        # ==========================================
-        # 2. Validar coherencia entre mantenimiento y mantenimiento_programado
-        # ==========================================
+            if tipo == "correctivo" and programado is not None:
+                raise serializers.ValidationError(
+                    "Un mantenimiento correctivo no puede estar asociado a un mantenimiento programado."
+                )
 
-        if programado:
-            # 1. Tipo del programado debe coincidir
-            if tipo in ["preventivo", "predictivo"]:
-                if programado.tipo != tipo:
+            if tipo == "predictivo" and programado is None:
+                raise serializers.ValidationError(
+                    "Un mantenimiento predictivo debe estar asociado a un mantenimiento programado."
+                )
+
+            if tipo == "preventivo" and programado:
+                if programado.maquina.id_maquina != maquina.id_maquina:
                     raise serializers.ValidationError(
-                        f"El mantenimiento programado debe ser de tipo '{tipo}'."
+                        "El mantenimiento programado no corresponde a la misma máquina."
                     )
 
-            # 2. Máquinas deben coincidir sí o sí
-            if programado.maquina.id_maquina != maquina.id_maquina:
-                raise serializers.ValidationError(
-                    "La máquina del mantenimiento y la del mantenimiento programado deben ser la misma.")
-
         # ==========================================
-        # 3. Validación horas_realizadas vs. la máquina
+        # 2. HORAS REALIZADAS (SOLO SI VIENEN)
         # ==========================================
 
-        # (a) No puede ser menor a las horas_totales de la máquina
-        if hasattr(maquina, 'horas_totales'):
-            if horas < maquina.horas_totales:
-                raise serializers.ValidationError(
-                    f"Las horas realizadas ({horas}) no pueden ser menores a las horas totales actuales de la máquina ({maquina.horas_totales})."
-                )
+        if 'horas_realizadas' in attrs:
+            if hasattr(maquina, 'horas_totales'):
+                if horas < maquina.horas_totales:
+                    raise serializers.ValidationError({
+                        "horas_realizadas": (
+                            f"Las horas realizadas ({horas}) no pueden ser menores "
+                            f"a las horas totales actuales de la máquina ({maquina.horas_totales})."
+                        )
+                    })
 
-        # (b) No puede ser menor al último mantenimiento
-        ultimo_mant = (
-            Mantenimiento.objects
-            .filter(maquina=maquina)
-            .order_by('-fecha_mantenimiento', '-id_mantenimiento')
-            .first()
-        )
-
-        if ultimo_mant and horas < ultimo_mant.horas_realizadas:
-            raise serializers.ValidationError(
-                f"Las horas realizadas ({horas}) no pueden ser menores a las del último mantenimiento ({ultimo_mant.horas_realizadas})."
+            ultimo_mant = (
+                Mantenimiento.objects
+                .filter(maquina=maquina)
+                .exclude(pk=getattr(instancia, 'pk', None))
+                .order_by('-fecha_mantenimiento', '-id_mantenimiento')
+                .first()
             )
 
+            if ultimo_mant and horas < ultimo_mant.horas_realizadas:
+                raise serializers.ValidationError({
+                    "horas_realizadas": (
+                        f"Las horas realizadas ({horas}) no pueden ser menores "
+                        f"a las del último mantenimiento ({ultimo_mant.horas_realizadas})."
+                    )
+                })
+
         # ==========================================
-        # 3. Reglas de negocio especiales
+        # 3. REGLAS ESPECIALES
         # ==========================================
 
-        # Preventivo muy antiguo
-        if tipo == "preventivo" and fecha:
+        if tipo == "preventivo" and 'fecha_mantenimiento' in attrs:
             dif_anios = date.today().year - fecha.year
             if dif_anios > 10:
                 raise serializers.ValidationError(
                     "Un mantenimiento preventivo no puede tener más de 10 años de antigüedad."
                 )
 
-        # Correctivo NO puede tener costo = 0
-        if tipo == "correctivo" and attrs.get('costo') == 0:
+        if tipo == "correctivo" and 'costo' in attrs and costo == 0:
             raise serializers.ValidationError(
                 "Un mantenimiento correctivo debe tener un costo mayor a 0."
             )
