@@ -159,6 +159,18 @@ ROLE_PERMISSIONS = {
         "mantenimiento_programado:mantenimientos_por_maquina",
 
         # -------------------------------------------------------
+        #                 MANTENIMIENTO
+        # -------------------------------------------------------
+        "mantenimiento:list",
+        "mantenimiento:retrieve",
+        "mantenimiento:create",
+        "mantenimiento:update",
+        "mantenimiento:partial_update",
+        "mantenimiento:destroy",
+        "mantenimiento:mantenimientos_por_maquina",
+        "mantenimiento:mantenimientos_por_usuario",
+
+        # -------------------------------------------------------
         #                 ALARMA
         # -------------------------------------------------------
         "alarma:list",
@@ -192,6 +204,7 @@ ROLE_PERMISSIONS = {
         # -------------------------------------------------------
         #                 MANTENIMIENTO PROGRAMADO
         # -------------------------------------------------------
+        "mantenimiento_programado:retrieve",
         "mantenimiento_programado:mantenimientos_por_maquina",
 
         # -------------------------------------------------------
@@ -199,6 +212,16 @@ ROLE_PERMISSIONS = {
         # -------------------------------------------------------
         "hoja_vida:list",
         "hoja_vida:retrieve",
+
+        # -------------------------------------------------------
+        #                 USUARIO
+        # -------------------------------------------------------
+        "usuario:list",
+
+        # -------------------------------------------------------
+        #                 PROYECTO
+        # -------------------------------------------------------
+        "proyecto:list",
 
         # -------------------------------------------------------
         #                 ALARMA
@@ -225,6 +248,11 @@ ROLE_PERMISSIONS = {
         # -------------------------------------------------------
         "mantenimiento_programado:list",
         "mantenimiento_programado:retrieve",
+
+        # -------------------------------------------------------
+        #                 USUARIO
+        # -------------------------------------------------------
+        "usuario:list",
 
         # -------------------------------------------------------
         #                 MANTENIMIENTO
