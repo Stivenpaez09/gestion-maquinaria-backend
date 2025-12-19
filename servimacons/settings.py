@@ -70,7 +70,8 @@ MIDDLEWARE = [
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:4200",
-    "http://127.0.0.1:4200"
+    "http://127.0.0.1:4200",
+    "https://gestion-maquinaria-frontend.vercel.app"
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -97,7 +98,8 @@ CORS_ALLOW_METHODS = [
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:4200",
     "http://127.0.0.1:4200",
-    "https://gestion-maquinaria-backend.onrender.com"
+    "https://gestion-maquinaria-backend.onrender.com",
+    "https://gestion-maquinaria-frontend.vercel.app"
 ]
 
 ROOT_URLCONF = 'servimacons.urls'
