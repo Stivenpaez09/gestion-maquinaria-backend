@@ -171,6 +171,12 @@ ROLE_PERMISSIONS = {
         "mantenimiento:mantenimientos_por_usuario",
 
         # -------------------------------------------------------
+        #                 HOJA DE VIDA
+        # -------------------------------------------------------
+        "hoja_vida:list",
+        "hoja_vida:retrieve",
+
+        # -------------------------------------------------------
         #                 ALARMA
         # -------------------------------------------------------
         "alarma:list",
@@ -244,6 +250,12 @@ ROLE_PERMISSIONS = {
         "maquinaria:maquinarias_pendientes",
         "maquinaria:maquinarias_al_dia",
         "maquinaria:ultimas_maquinarias",
+
+        # -------------------------------------------------------
+        #                 HOJA DE VIDA
+        # -------------------------------------------------------
+        "hoja_vida:list",
+        "hoja_vida:retrieve",
 
         # -------------------------------------------------------
         #                 MANTENIMIENTO PROGRAMADO
