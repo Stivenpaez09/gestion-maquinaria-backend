@@ -262,6 +262,7 @@ ROLE_PERMISSIONS = {
         # -------------------------------------------------------
         "mantenimiento_programado:list",
         "mantenimiento_programado:retrieve",
+        "mantenimiento_programado:mantenimientos_por_maquina",
 
         # -------------------------------------------------------
         #                 USUARIO
