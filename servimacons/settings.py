@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'cloudinary',
-    'django-cloudinary-storage',
+    'cloudinary_storage',
     'usuarios',
     'maquinarias',
     'conductores',
