@@ -36,6 +36,3 @@ urlpatterns = [
     path('api/alarmas/', include('alarmas.urls')),
     path('api/logins/', include('logins.urls')),
 ]
-
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
