@@ -29,4 +29,4 @@ class Empresa(models.Model):
         verbose_name_plural = "Empresas"
 
     def __str__(self):
-        return f"{self.nombre} - NIT: {self.nit}-{self.digito_verificacion}"
+        return f"{self.nombre} - NIT: {self.nit}-{self.direccion}"

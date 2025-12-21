@@ -1,14 +1,12 @@
-import os
-import uuid
+import cloudinary.uploader
 from typing import Optional
 
 from django.core.files.uploadedfile import UploadedFile
-from rest_framework.exceptions import NotFound
+from rest_framework.exceptions import NotFound, ValidationError
 
 from hojas_vida.repositories.hoja_vida_repository import HojaVidaRepository
 from hojas_vida.serializers.hoja_vida_serializer import HojaVidaSerializer
 from hojas_vida.services.hoja_vida_service_interface import IHojaVidaService
-from servimacons import settings
 
 
 class HojaVidaService(IHojaVidaService):
@@ -32,22 +30,16 @@ class HojaVidaService(IHojaVidaService):
         if archivo_file is None:
             return None
 
-        carpeta_relativa = "hojas_vida/files"
-        carpeta_absoluta = os.path.join(settings.MEDIA_ROOT, carpeta_relativa)
-        os.makedirs(carpeta_absoluta, exist_ok=True)
+        try:
+            resultado = cloudinary.uploader.upload(
+                archivo_file,
+                folder="hojas_vida/files",  # carpeta lógica en Cloudinary
+                resource_type="image"  # forzamos imagen
+            )
+            return resultado.get("secure_url")
 
-        extension = archivo_file.name.split('.')[-1]
-        filename = f"{uuid.uuid4()}.{extension}"
-
-        ruta_fisica = os.path.join(carpeta_absoluta, filename)
-
-        with open(ruta_fisica, "wb+") as destino:
-            for chunk in archivo_file.chunks():
-                destino.write(chunk)
-
-        url_final = f"{settings.MEDIA_URL}{carpeta_relativa}/{filename}"
-
-        return url_final
+        except Exception as e:
+            raise ValidationError({"foto": "Error al subir la imagen"})
 
     # ----------------------------------------------------------------------
     # Listar Hojas de Vida

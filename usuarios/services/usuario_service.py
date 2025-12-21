@@ -1,11 +1,9 @@
-import os
-import uuid
+import cloudinary.uploader
 from typing import Optional
 
 from django.core.files.uploadedfile import UploadedFile
 from rest_framework.exceptions import ValidationError, NotFound
 
-from servimacons import settings
 from usuarios.repositories.usuario_repository import UsuarioRepository
 from usuarios.serializers.usuario_serializer import UsuarioSerializer
 from usuarios.services.usuario_service_interface import IUsuarioService
@@ -32,29 +30,17 @@ class UsuarioService(IUsuarioService):
         if not foto_file:
             return None
 
-        # Carpeta dentro de media/
-        carpeta_relativa = "usuarios/photos"
-        carpeta_absoluta = os.path.join(settings.MEDIA_ROOT, carpeta_relativa)
+        try:
+            resultado = cloudinary.uploader.upload(
+                foto_file,
+                folder="usuarios/photos",  # carpeta lógica en Cloudinary
+                resource_type="image"  # forzamos imagen
+            )
+            return resultado.get("secure_url")
 
-        # Crear carpeta si no existe
-        os.makedirs(carpeta_absoluta, exist_ok=True)
+        except Exception as e:
+            raise ValidationError({"foto": "Error al subir la imagen"})
 
-        # Nombre único
-        extension = foto_file.name.split('.')[-1]
-        filename = f"{uuid.uuid4()}.{extension}"
-
-        # Ruta absoluta para guardar en disco
-        ruta_fisica = os.path.join(carpeta_absoluta, filename)
-
-        # Guardar archivo
-        with open(ruta_fisica, "wb+") as destino:
-            for chunk in foto_file.chunks():
-                destino.write(chunk)
-
-        # Construir URL absoluta para devolver y guardar en BD
-        url_final = f"{settings.MEDIA_URL}{carpeta_relativa}/{filename}"
-
-        return url_final
     # ----------------------------------------------------------------------
     # Listar Usuarios
     # ----------------------------------------------------------------------

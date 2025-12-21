@@ -1,5 +1,4 @@
-import os
-import uuid
+import cloudinary.uploader
 from typing import Optional
 
 from django.core.files.uploadedfile import UploadedFile
@@ -8,7 +7,6 @@ from rest_framework.exceptions import NotFound, ValidationError
 from mantenimientos.repositories.mantenimiento_repository import MantenimientoRepository
 from mantenimientos.serializers.mantenimiento_serializer import MantenimientoSerializer
 from mantenimientos.services.mantenimiento_service_interface import IMantenimientoService
-from servimacons import settings
 
 
 class MantenimientoService(IMantenimientoService):
@@ -34,29 +32,16 @@ class MantenimientoService(IMantenimientoService):
         if not foto_file:
             return None
 
-        # Carpeta dentro de MEDIA_ROOT
-        carpeta_relativa = "mantenimientos/photos"
-        carpeta_absoluta = os.path.join(settings.MEDIA_ROOT, carpeta_relativa)
+        try:
+            resultado = cloudinary.uploader.upload(
+                foto_file,
+                folder="mantenimientos/photos",  # carpeta lógica en Cloudinary
+                resource_type="image"  # forzamos imagen
+            )
+            return resultado.get("secure_url")
 
-        # Crear carpeta si no existe
-        os.makedirs(carpeta_absoluta, exist_ok=True)
-
-        # Generar nombre único
-        extension = foto_file.name.split('.')[-1]
-        filename = f"{uuid.uuid4()}.{extension}"
-
-        # Ruta física
-        ruta_fisica = os.path.join(carpeta_absoluta, filename)
-
-        # Guardado del archivo en disco
-        with open(ruta_fisica, "wb+") as destino:
-            for chunk in foto_file.chunks():
-                destino.write(chunk)
-
-        # Construir URL accesible públicamente
-        url_relativa = f"{settings.MEDIA_URL}{carpeta_relativa}/{filename}"
-
-        return url_relativa
+        except Exception as e:
+            raise ValidationError({"foto": "Error al subir la imagen"})
 
     # ----------------------------------------------------------------------
     # Listar

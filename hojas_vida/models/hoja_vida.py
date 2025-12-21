@@ -29,7 +29,7 @@ class HojaVida(models.Model):
 
     descripcion = models.TextField(null=True, blank=True)
 
-    archivo = models.CharField(max_length=255, null=True, blank=True)
+    archivo = models.CharField(max_length=500, null=True, blank=True)
 
     fecha_registro = models.DateField(default=timezone.now)
 

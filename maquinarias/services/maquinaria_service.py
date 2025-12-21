@@ -1,5 +1,4 @@
-import os
-import uuid
+import cloudinary.uploader
 from decimal import Decimal
 from typing import Optional
 
@@ -13,7 +12,6 @@ from maquinarias.serializers.maquinaria_serializer import MaquinariaSerializer
 from maquinarias.repositories.maquinaria_repository import MaquinariaRepository
 from maquinarias.services.maquinaria_service_interface import IMaquinariaService
 from proyecto_maquinaria.services.proyecto_maquinaria_service import ProyectoMaquinariaService
-from servimacons import settings
 
 
 class MaquinariaService(IMaquinariaService):
@@ -39,29 +37,16 @@ class MaquinariaService(IMaquinariaService):
         if not foto_file:
             return None
 
-        # Carpeta dentro de media/
-        carpeta_relativa = "maquinarias/photos"
-        carpeta_absoluta = os.path.join(settings.MEDIA_ROOT, carpeta_relativa)
+        try:
+            resultado = cloudinary.uploader.upload(
+                foto_file,
+                folder="maquinarias/photos",  # carpeta lógica en Cloudinary
+                resource_type="image"  # forzamos imagen
+            )
+            return resultado.get("secure_url")
 
-        # Crear carpeta si no existe
-        os.makedirs(carpeta_absoluta, exist_ok=True)
-
-        # Nombre único
-        extension = foto_file.name.split('.')[-1]
-        filename = f"{uuid.uuid4()}.{extension}"
-
-        # Ruta física en disco
-        ruta_fisica = os.path.join(carpeta_absoluta, filename)
-
-        # Guardar archivo físicamente
-        with open(ruta_fisica, "wb+") as destino:
-            for chunk in foto_file.chunks():
-                destino.write(chunk)
-
-        # URL interna MEDIA_URL
-        url_final = f"{settings.MEDIA_URL}{carpeta_relativa}/{filename}"
-
-        return url_final
+        except Exception as e:
+            raise ValidationError({"foto": "Error al subir la imagen"})
 
     # ---------------------------------------------------------
     # CREAR

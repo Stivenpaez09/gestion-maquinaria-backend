@@ -25,7 +25,7 @@ class Maquinaria(models.Model):
         choices=ESTADOS,
         default='operativa'
     )
-    foto = models.CharField(max_length=255, null=True, blank=True)
+    foto = models.CharField(max_length=500, null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

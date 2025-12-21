@@ -49,9 +49,9 @@ class RegistroHorasMaquinaria(models.Model):
         help_text="Observaciones adicionales sobre el registro."
     )
 
-    foto_planilla = models.URLField(blank=True, null=True)
-    foto_horometro_inicial = models.URLField(blank=True, null=True)
-    foto_horometro_final = models.URLField(blank=True, null=True)
+    foto_planilla = models.URLField(max_length=500, blank=True, null=True)
+    foto_horometro_inicial = models.URLField(max_length=500, blank=True, null=True)
+    foto_horometro_final = models.URLField(max_length=500, blank=True, null=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

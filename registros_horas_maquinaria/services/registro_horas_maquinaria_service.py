@@ -1,10 +1,9 @@
-import os
-import uuid
+import cloudinary.uploader
 from typing import Optional
 
 from django.core.files.uploadedfile import UploadedFile
 from django.db import transaction
-from rest_framework.exceptions import NotFound
+from rest_framework.exceptions import NotFound, ValidationError
 
 from alarmas.services.alarma_service import AlarmaService
 from maquinarias.services.maquinaria_service import MaquinariaService
@@ -16,7 +15,6 @@ from registros_horas_maquinaria.serializers.registro_horas_maquinaria_serializer
     RegistroHorasMaquinariaSerializer
 from registros_horas_maquinaria.services.registro_horas_maquinaria_service_interface import \
     IRegistroHorasMaquinariaService
-from servimacons import settings
 
 
 class RegistroHorasMaquinariaService(IRegistroHorasMaquinariaService):
@@ -40,35 +38,22 @@ class RegistroHorasMaquinariaService(IRegistroHorasMaquinariaService):
     # ----------------------------------------------------------------------
     def _guardar_foto(self, foto_file: Optional[UploadedFile]) -> Optional[str]:
         """
-        Guarda la foto en maquinarias/photos/
+        Guarda la foto en registros/photos/
         Retorna la URL absoluta final que se almacenará en BD.
         """
         if not foto_file:
             return None
 
-        # Carpeta dentro de media/
-        carpeta_relativa = "maquinarias/photos"
-        carpeta_absoluta = os.path.join(settings.MEDIA_ROOT, carpeta_relativa)
+        try:
+            resultado = cloudinary.uploader.upload(
+                foto_file,
+                folder="registros/photos",  # carpeta lógica en Cloudinary
+                resource_type="image"  # forzamos imagen
+            )
+            return resultado.get("secure_url")
 
-        # Crear carpeta si no existe
-        os.makedirs(carpeta_absoluta, exist_ok=True)
-
-        # Nombre único
-        extension = foto_file.name.split('.')[-1]
-        filename = f"{uuid.uuid4()}.{extension}"
-
-        # Ruta física en disco
-        ruta_fisica = os.path.join(carpeta_absoluta, filename)
-
-        # Guardar archivo físicamente
-        with open(ruta_fisica, "wb+") as destino:
-            for chunk in foto_file.chunks():
-                destino.write(chunk)
-
-        # URL interna MEDIA_URL
-        url_final = f"{settings.MEDIA_URL}{carpeta_relativa}/{filename}"
-
-        return url_final
+        except Exception as e:
+            raise ValidationError({"foto": "Error al subir la imagen"})
 
     # ----------------------------------------------------------------------
     # Listar
